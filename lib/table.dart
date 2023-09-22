@@ -4,16 +4,11 @@ import 'package:minesweeper/cell.dart';
 
 class GameTable {
   List<Cell> cells = [];
-  int cellDisvoered = 0;
-  int minesCount = 10;
-  int tableSizeX = 10;
-  int tableSizeY = 10;
-  bool gameisOver = false;
-  bool gameisStarted = false;
-  bool? gameisWon;
-  GameDifficulty gameDifficulty = GameDifficulty.medium;
+  int tableSizeX;
+  int tableSizeY;
+  int minesCount;
 
-  GameTable() {
+  GameTable({required this.tableSizeX, required this.tableSizeY, required this.minesCount}) {
     loadCells();
     loadMines();
     loadNumbers();
@@ -28,7 +23,7 @@ class GameTable {
   }
 
   void loadMines() {
-    for (int i = 0; i < minesCount - 1; i++) {
+    for (int i = 0; i < minesCount; i++) {
       var random = Random();
       var index = random.nextInt(tableSizeX * tableSizeY);
       cells[index].cellType = CellType.mine;
@@ -69,86 +64,6 @@ class GameTable {
     }
     return adjentCells;
   }
-
-  void discoverCell(Cell cell) {
-    if (gameisStarted == false) {
-      gameisStarted = true;
-    }
-    if (cell.isDiscovered || cell.isFlagged || gameisOver) {
-      return;
-    }
-    cell.isDiscovered = true;
-    cellDisvoered++;
-    if (cell.cellType == CellType.empty) {
-      List<Cell> adjentCells = getAdjentCells(cell);
-      for (final adjentCell in adjentCells) {
-        discoverCell(adjentCell);
-      }
-    }
-    if (cell.cellType == CellType.mine) {
-      endGame(false);
-    }
-    if (cellDisvoered == cells.length - minesCount) {
-      endGame(true);
-    }
-  }
-
-  void flagCell(Cell cell) {
-    if (cell.isDiscovered || gameisOver) {
-      return;
-    }
-    cell.isFlagged = !cell.isFlagged;
-  }
-
-  void resetGame() {
-    cells = [];
-    cellDisvoered = 0;
-    gameisOver = false;
-    gameisStarted = false;
-    gameisWon = null;
-    switch (gameDifficulty) {
-      case GameDifficulty.easy:
-        minesCount = 3;
-        tableSizeX = 5;
-        tableSizeY = 5;
-        break;
-      case GameDifficulty.medium:
-        minesCount = 10;
-        tableSizeX = 10;
-        tableSizeY = 10;
-        break;
-      case GameDifficulty.hard:
-        minesCount = 20;
-        tableSizeX = 15;
-        tableSizeY = 15;
-        break;
-    }
-    loadCells();
-    loadMines();
-    loadNumbers();
-  }
-
-  void changeDifficulty(GameDifficulty difficulty) {
-    if (gameDifficulty == difficulty) return;
-    gameDifficulty = difficulty;
-    resetGame();
-  }
-
-  void endGame(bool isWin) {
-    gameisOver = true;
-    gameisStarted = false;
-    if (isWin) {
-      gameisWon = true;
-    } else {
-      gameisWon = false;
-    }
-  }
-}
-
-enum GameDifficulty {
-  easy,
-  medium,
-  hard,
 }
 
 extension IterableExtension<T> on Iterable<T> {
