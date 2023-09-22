@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:minesweeper/change_difficulty_button.dart';
 import 'package:minesweeper/game.dart';
 import 'package:minesweeper/cell.dart';
 
@@ -16,28 +17,23 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const MinesweeperMainPage(title: 'MineSweeper'),
+      home: MinesweeperMainPage(title: 'MineSweeper'),
     );
   }
 }
 
-class MinesweeperMainPage extends StatefulWidget {
-  const MinesweeperMainPage({super.key, required this.title});
+class MinesweeperMainPage extends StatelessWidget {
+  MinesweeperMainPage({super.key, required this.title});
   final String title;
 
-  @override
-  State<MinesweeperMainPage> createState() => _MinesweeperMainPageState();
-}
-
-class _MinesweeperMainPageState extends State<MinesweeperMainPage> {
-  Game game = Game(GameDifficulty.medium);
+  final Game game = Game(GameDifficulty.medium);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
+        title: Text(title),
       ),
       body: ListenableBuilder(
           listenable: game,
@@ -112,11 +108,11 @@ class _MinesweeperMainPageState extends State<MinesweeperMainPage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    changeDifficultyButton(context, game, GameDifficulty.easy),
+                    ChangeDifficultyButton(game: game, difficulty: GameDifficulty.easy),
                     SizedBox(width: 12),
-                    changeDifficultyButton(context, game, GameDifficulty.medium),
+                    ChangeDifficultyButton(game: game, difficulty: GameDifficulty.medium),
                     SizedBox(width: 12),
-                    changeDifficultyButton(context, game, GameDifficulty.hard)
+                    ChangeDifficultyButton(game: game, difficulty: GameDifficulty.hard),
                   ],
                 ),
                 SizedBox(height: 24),
@@ -131,51 +127,4 @@ class _MinesweeperMainPageState extends State<MinesweeperMainPage> {
           }),
     );
   }
-}
-
-Widget changeDifficultyButton(BuildContext context, Game game, GameDifficulty difficulty) {
-  return ElevatedButton(
-    style: difficulty == game.gameDifficulty
-        ? ElevatedButton.styleFrom(
-            backgroundColor: Theme.of(context).colorScheme.primary,
-            foregroundColor: Theme.of(context).colorScheme.onPrimary,
-          )
-        : null,
-    onPressed: () {
-      if (game.gameDifficulty != difficulty) {
-        if (game.gameisStarted) {
-          showDialog<String>(
-            context: context,
-            builder: (BuildContext context) => AlertDialog(
-              title: const Text(
-                'Restart Game',
-                textAlign: TextAlign.center,
-              ),
-              content: const Text('Are you sure you want to restart the game?'),
-              actions: <Widget>[
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Cancel'),
-                ),
-                TextButton(
-                  onPressed: () {
-                    game.changeDifficulty(difficulty);
-                    Navigator.pop(context);
-                  },
-                  child: const Text('OK'),
-                ),
-              ],
-            ),
-          );
-        } else {
-          game.changeDifficulty(difficulty);
-        }
-      }
-    },
-    child: switch (difficulty) {
-      GameDifficulty.easy => Text('Easy'),
-      GameDifficulty.medium => Text('Medium'),
-      GameDifficulty.hard => Text('Hard'),
-    },
-  );
 }
