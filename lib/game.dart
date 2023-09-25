@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:minesweeper/cell.dart';
 import 'package:minesweeper/table.dart';
-import 'package:minesweeper/save_game.dart';
+import 'package:minesweeper/shared_pref.dart';
 
 class Game with ChangeNotifier {
   GameDifficulty gameDifficulty;
@@ -10,10 +10,12 @@ class Game with ChangeNotifier {
   bool gameisStarted = false;
   bool? gameisWon;
   int cellDisvoered = 0;
+  final SharedPref sharedPref = SharedPref();
   late GameTable gameTable;
 
   Game(this.gameDifficulty) {
     gameTable = createGameTable(gameDifficulty);
+    loadGame();
   }
 
   GameTable createGameTable(GameDifficulty gameDifficulty) {
@@ -58,6 +60,25 @@ class Game with ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> saveGame() async {
+    await sharedPref.saveToSharedPred(this);
+  }
+
+  Future<void> loadGame() async {
+    await sharedPref.loadfromSharedPref(this);
+    notifyListeners();
+  }
+
+  Future<void> deleteSave() async {
+    await sharedPref.deleteFromSharedPref();
+  }
+
+  void changeDifficulty(GameDifficulty difficulty) {
+    if (gameDifficulty == difficulty) return;
+    gameDifficulty = difficulty;
+    resetGame();
+  }
+
   void resetGame() {
     gameTable.cells = [];
     cellDisvoered = 0;
@@ -66,12 +87,6 @@ class Game with ChangeNotifier {
     gameisWon = null;
     createGameTable(gameDifficulty);
     notifyListeners();
-  }
-
-  void changeDifficulty(GameDifficulty difficulty) {
-    if (gameDifficulty == difficulty) return;
-    gameDifficulty = difficulty;
-    resetGame();
   }
 
   void endGame(bool isWin) {
@@ -87,12 +102,6 @@ class Game with ChangeNotifier {
         cell.isDiscovered = true;
       }
     }
-    notifyListeners();
-  }
-
-  void loadSavedGame(gameTableStringList, game) {
-    fromStringList(gameTableStringList, game);
-    notifyListeners();
   }
 }
 

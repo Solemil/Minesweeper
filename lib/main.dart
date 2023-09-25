@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:minesweeper/cell.dart';
 import 'package:minesweeper/game.dart';
-import 'package:minesweeper/save_game.dart';
 import 'package:minesweeper/change_difficulty_button.dart';
 
 void main() {
@@ -25,54 +23,22 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class MinesweeperMainPage extends StatefulWidget {
-  const MinesweeperMainPage({super.key, required this.title});
+class MinesweeperMainPage extends StatelessWidget {
+  MinesweeperMainPage({super.key, required this.title});
   final String title;
-
-  @override
-  State<MinesweeperMainPage> createState() => _MinesweeperMainPageState();
-}
-
-class _MinesweeperMainPageState extends State<MinesweeperMainPage> {
-  final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
-
   final Game game = Game(GameDifficulty.medium);
-
-  Future<void> saveGame() async {
-    if (game.gameisOver) return;
-    final SharedPreferences prefs = await _prefs;
-    final gameTableJsonList = gameToStringList(game);
-    await prefs.setStringList('MinesweeperGameTable', gameTableJsonList);
-  }
-
-  Future<void> loadGame() async {
-    final SharedPreferences prefs = await _prefs;
-    final gameTableStringList = prefs.getStringList('MinesweeperGameTable');
-    if (gameTableStringList != null) game.loadSavedGame(gameTableStringList, game);
-  }
-
-  Future<void> deleteSave() async {
-    final SharedPreferences prefs = await _prefs;
-    await prefs.remove('MinesweeperGameTable');
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    loadGame();
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
+        title: Text(title),
       ),
       body: ListenableBuilder(
           listenable: game,
           builder: (BuildContext context, Widget? child) {
-            if (game.gameisOver) deleteSave();
+            if (game.gameisOver) game.deleteSave();
             return Column(
               children: [
                 Stack(
@@ -99,11 +65,11 @@ class _MinesweeperMainPageState extends State<MinesweeperMainPage> {
                                   child: GestureDetector(
                                     onTap: () {
                                       game.discoverCell(game.gameTable.cells[index]);
-                                      saveGame();
+                                      game.saveGame();
                                     },
                                     onSecondaryTap: () {
                                       game.flagCell(game.gameTable.cells[index]);
-                                      saveGame();
+                                      game.saveGame();
                                     },
                                     child: Container(
                                       height: 50,
@@ -155,9 +121,10 @@ class _MinesweeperMainPageState extends State<MinesweeperMainPage> {
                 SizedBox(height: 24),
                 ElevatedButton(
                   onPressed: () {
+                    game.deleteSave();
                     game.resetGame();
                   },
-                  child: Text('Restart game'),
+                  child: Text('Reset game'),
                 ),
               ],
             );
