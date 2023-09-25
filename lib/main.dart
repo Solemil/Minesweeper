@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-
-import 'package:minesweeper/change_difficulty_button.dart';
-import 'package:minesweeper/game.dart';
-import 'package:minesweeper/cell.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import 'package:minesweeper/cell.dart';
+import 'package:minesweeper/game.dart';
+import 'package:minesweeper/save_game.dart';
+import 'package:minesweeper/change_difficulty_button.dart';
 
 void main() {
   runApp(const MyApp());
@@ -14,7 +15,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'MineSweeper',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
@@ -40,14 +41,14 @@ class _MinesweeperMainPageState extends State<MinesweeperMainPage> {
   Future<void> saveGame() async {
     if (game.gameisOver) return;
     final SharedPreferences prefs = await _prefs;
-    final gameTableJsonList = game.toStringList();
+    final gameTableJsonList = gameToStringList(game);
     await prefs.setStringList('MinesweeperGameTable', gameTableJsonList);
   }
 
   Future<void> loadGame() async {
     final SharedPreferences prefs = await _prefs;
-    final gameTableJsonList = prefs.getStringList('MinesweeperGameTable');
-    if (gameTableJsonList != null) game.fromStringList(gameTableJsonList);
+    final gameTableStringList = prefs.getStringList('MinesweeperGameTable');
+    if (gameTableStringList != null) game.loadSavedGame(gameTableStringList, game);
   }
 
   Future<void> deleteSave() async {
@@ -152,51 +153,12 @@ class _MinesweeperMainPageState extends State<MinesweeperMainPage> {
                   ],
                 ),
                 SizedBox(height: 24),
-                // Row(
-                //   mainAxisAlignment: MainAxisAlignment.center,
-                //   children: [
-                //     ElevatedButton(onPressed: () => saveGame(), child: Text('Save')),
-                //     SizedBox(width: 12),
-                //     ElevatedButton(
-                //         onPressed: () {
-                //           if (game.gameisStarted) {
-                //             showDialog<String>(
-                //               context: context,
-                //               builder: (BuildContext context) => AlertDialog(
-                //                 title: const Text(
-                //                   'Load Game',
-                //                   textAlign: TextAlign.center,
-                //                 ),
-                //                 content: const Text('Are you sure you want to lose your current progress?'),
-                //                 actions: <Widget>[
-                //                   TextButton(
-                //                     onPressed: () => Navigator.pop(context),
-                //                     child: const Text('Cancel'),
-                //                   ),
-                //                   TextButton(
-                //                     onPressed: () {
-                //                       loadGame();
-                //                       Navigator.pop(context);
-                //                     },
-                //                     child: const Text('OK'),
-                //                   ),
-                //                 ],
-                //               ),
-                //             );
-                //           } else {
-                //             loadGame();
-                //           }
-                //         },
-                //         child: Text('Load')),
-                //     SizedBox(width: 12),
-                    ElevatedButton(
-                      onPressed: () {
-                        game.resetGame();
-                      },
-                      child: Text('Reset'),
-                    ),
-                //   ],
-                // ),
+                ElevatedButton(
+                  onPressed: () {
+                    game.resetGame();
+                  },
+                  child: Text('Restart game'),
+                ),
               ],
             );
           }),
